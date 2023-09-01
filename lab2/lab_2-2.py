@@ -31,8 +31,8 @@ def shape_and_size():
 
 def section3():
     print("\nSECTION 3: zeroes, ones, rand, arange, linspace")
-    print(np.zeroes(10))
-    print(np.zeroes(2, 5))
+    print(np.zeros(10))
+    print(np.zeros((2, 5)))
     print(np.ones(10))
     print(np.random.rand(10))
     print(np.arange(0, 1, 0.2))
@@ -101,3 +101,14 @@ def numpy_functions():
     print(np.max(a))
     print(np.argmax(a, axis=0))
 
+array()
+shape_and_size()
+section3()
+resha()
+vector_sum()
+scalar()
+dot_product()
+access_elements()
+slicing()
+transpo()
+numpy_functions()
