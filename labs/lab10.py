@@ -31,3 +31,5 @@ def run():
 
     print(f"Actual\nw1 = {w[0]}, w2 = {w[1]}, w3 = {w[2]}, b = {b}")
     print(f"Rounded\nw1 = {round(w[0])}, w2 = {round(w[1])}, w3 = {round(w[2])}, b = {round(b)}")
+
+run()

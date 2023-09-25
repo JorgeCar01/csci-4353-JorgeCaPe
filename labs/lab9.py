@@ -35,3 +35,5 @@ def run():
     print(f"w = {w}, b = {b}")
     plt.plot(xl, w * xl + b)
     plt.show()
+
+run()

@@ -23,3 +23,5 @@ def run():
 
     mse = sum(((a_and_b[0] * train_x + a_and_b[1]) - train_y)**2)/len(train_x)
     print(mse)
+
+run()
