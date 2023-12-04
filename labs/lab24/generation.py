@@ -4,9 +4,12 @@ from torchvision.datasets import ImageFolder, MNIST
 from torchvision import transforms
 from torch import autograd
 from torch.autograd import Variable
-from torchvision.utils import make_grid
+from torchvision.utils import make_grid, save_image
 
 import numpy as np
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 class Generator(nn.Module):
     def __init__(self):
         super().__init__()
@@ -33,7 +36,11 @@ class Generator(nn.Module):
 
 generator = Generator().to(device)
 
-generator = generator.load_state_dict(torch.load('generator_state.pth'))
+generator.load_state_dict(torch.load('/home/jorgecarranzapena01/generator_state.pt'))
+
+def save_generator_image(image, path):
+    save_image(image, path)
+
 for i in range(10):
     z = Variable(torch.randn(100, 100)).cuda()
     labels = torch.LongTensor([i for i in range(10) for _ in range(10)]).cuda()
