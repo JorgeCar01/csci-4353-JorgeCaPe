@@ -1,5 +1,6 @@
 from tqdm import tqdm
-
+import os
+from PIL import Image
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -202,13 +203,18 @@ def train(D, G, disc_opt, gen_opt, train_dl, batch_size = 32, epochs = 25, gen_i
             G.eval()                    #Going into eval mode to get sample images
             samples = G(fixed_samples.float())
             G.train()                   #Going back into train mode
+            
+            save_dir = 'img'
 
             fig, axes = plt.subplots(figsize=(7,7), nrows=4, ncols=4, sharey=True, sharex=True)
-            for ax, img in zip(axes.flatten(), samples):
+            for i, (ax, img) in enumerate(zip(axes.flatten(), samples)):
                img = img.cpu().detach()
                ax.xaxis.set_visible(False)
                ax.yaxis.set_visible(False)
-               im = ax.imshow(img.reshape((28,28)), cmap='Greys_r')
+
+               img_np = img.numpy().squeeze() * 255
+               img_pil = Image.fromarray(img_np).convert('L')
+               img_pil.save(os.path.join(save_dir, f'image_epoch{epoch}_num{i}.png'))
 
 
         #Printing losses every epoch
