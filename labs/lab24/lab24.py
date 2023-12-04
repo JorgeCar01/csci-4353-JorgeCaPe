@@ -143,5 +143,5 @@ for i in range(10):
     z = Variable(torch.randn(100, 100)).cuda()
     labels = torch.LongTensor([i for i in range(10) for _ in range(10)]).cuda()
     images = generator(z, labels).unsqueeze(1)
-    generated_img = make_grid(generated_img)
+    generated_img = make_grid(images)
     save_generator_image(generated_img, f"/home/jorgecarranzapena01/csci-4353-JorgeCaPe/labs/lab24/img/outputted_img{i + 1}.png")
