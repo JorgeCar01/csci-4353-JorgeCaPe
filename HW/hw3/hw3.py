@@ -21,7 +21,7 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-path_to_data = r'C:\School\csci 4353\celebA\img_align_celeba'
+path_to_data = r'C:\School\csci 4353\celebA'
 dataset = datasets.ImageFolder(root=path_to_data, transform=transform)
 
 
@@ -162,11 +162,11 @@ def train(D, G, disc_opt, gen_opt, train_dl, batch_size = 32, epochs = 25, gen_i
         gen_loss_total = 0
         gen_out = 0
 
-        for train_x in train_dl:
+        for train_x, labels in tqdm(train_dl):
 
             #Discriminator training
             disc_opt.zero_grad()
-            print(train_x)
+            # print(train_x)
             train_x = train_x*2 - 1          #Converting the real images to have values between -1 and 1
             train_x = train_x.to(device)     #Passing to GPU
             real_out = D(train_x.float())
@@ -225,11 +225,12 @@ def train(D, G, disc_opt, gen_opt, train_dl, batch_size = 32, epochs = 25, gen_i
 
 disc_losses, gen_losses = train(D, G, disc_opt, gen_opt, train_dl, batch_size)
 
-fig, ax = plt.subplots()
-print(disc_losses)
-#disc_losses = disc_losses.numpy()
-#gen_losses = np.array(gen_losses)
-plt.plot(disc_losses, label='Discriminator')
-plt.plot(gen_losses, label='Generator')
-plt.title("Training Losses")
-plt.legend()
+torch.save(G.state_dict(), 'generator_state.pt')
+# fig, ax = plt.subplots()
+# print(disc_losses)
+# #disc_losses = disc_losses.numpy()
+# #gen_losses = np.array(gen_losses)
+# plt.plot(disc_losses, label='Discriminator')
+# plt.plot(gen_losses, label='Generator')
+# plt.title("Training Losses")
+# plt.legend()
