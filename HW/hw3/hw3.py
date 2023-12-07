@@ -1,12 +1,9 @@
 from tqdm import tqdm
 import os
-from PIL import Image
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
-import matplotlib
-import matplotlib.pylab as plt
 import torch.nn.functional as F
 from torchvision.utils import make_grid, save_image
 import torchvision.datasets as datasets
@@ -21,12 +18,12 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-path_to_data = r'C:\School\csci 4353\celebA'
+path_to_data = r'/home/jorgecarranzapena01/celebA'
 dataset = datasets.ImageFolder(root=path_to_data, transform=transform)
 
 
 random_seed = 1
-batch_size = 32
+batch_size = 128
 train_dl = DataLoader(dataset, batch_size, shuffle = True)
 
 
@@ -203,19 +200,12 @@ def train(D, G, disc_opt, gen_opt, train_dl, batch_size = 32, epochs = 25, gen_i
             G.eval()                    #Going into eval mode to get sample images
             samples = G(fixed_samples.float())
             G.train()                   #Going back into train mode
-            
-            save_dir = 'img'
+            generated_img = samples.cpu().detach()
 
-            fig, axes = plt.subplots(figsize=(7,7), nrows=4, ncols=4, sharey=True, sharex=True)
-            for i, (ax, img) in enumerate(zip(axes.flatten(), samples)):
-               img = img.cpu().detach()
-               ax.xaxis.set_visible(False)
-               ax.yaxis.set_visible(False)
+            save_dir = '/home/jorgecarranzapena01/csci-4353-JorgeCaPe/HW/hw3/img'
 
-               img_np = img.numpy().squeeze() * 255
-               img_pil = Image.fromarray(img_np).convert('L')
-               img_pil.save(os.path.join(save_dir, f'image_epoch{epoch}_num{i}.png'))
-
+            generated_img = make_grid(generated_img)
+            save_image(generated_img, f"{save_dir}/image_epoch{epoch}.png")
 
         #Printing losses every epoch
         print("Epoch ", epoch, ": Discriminator Loss = ", disc_loss_total/len(train_dl), ", Generator Loss = ", gen_loss_total/len(train_dl))
