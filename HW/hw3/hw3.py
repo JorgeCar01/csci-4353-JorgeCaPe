@@ -23,7 +23,7 @@ dataset = datasets.ImageFolder(root=path_to_data, transform=transform)
 
 
 random_seed = 1
-batch_size = 128
+batch_size = 64
 train_dl = DataLoader(dataset, batch_size, shuffle = True)
 
 
@@ -31,35 +31,23 @@ class Discriminator(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.conv0 = nn.Conv2d(1, 32, kernel_size = 3, stride = 2, padding = 1)
-        #self.conv0_bn = nn.BatchNorm2d(32)
-        self.conv0_drop = nn.Dropout2d(0.25)
-        self.conv1 = nn.Conv2d(32, 64, kernel_size = 3, stride = 1, padding = 1)
-        #self.conv1_bn = nn.BatchNorm2d(64)
-        self.conv1_drop = nn.Dropout2d(0.25)
-        self.conv2 = nn.Conv2d(64, 128, kernel_size = 3, stride = 1, padding = 1)
-        #self.conv2_bn = nn.BatchNorm2d(128)
-        self.conv2_drop = nn.Dropout2d(0.25)
-        self.conv3 = nn.Conv2d(128, 256, kernel_size = 3, stride = 2, padding = 1)
-        #self.conv3_bn = nn.BatchNorm2d(256)
-        self.conv3_drop = nn.Dropout2d(0.25)
-        self.fc = nn.Linear(12544, 1)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=4, stride=2, padding=1)
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1)
+        self.conv2_bn = nn.BatchNorm2d(128)
+        self.conv3 = nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1)
+        self.conv3_bn = nn.BatchNorm2d(256)
+        self.conv4 = nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1)
+        self.conv4_bn = nn.BatchNorm2d(512)
+
+        self.fc = nn.Linear(100352, 1)
     def forward(self, x):
-        x = x.view(-1, 1, 28, 28)
-        x = F.leaky_relu(self.conv0(x), 0.2)
-        #x = self.conv0_bn(x)
-        x = self.conv0_drop(x)
         x = F.leaky_relu(self.conv1(x), 0.2)
-        #x = self.conv1_bn(x)
-        x = self.conv1_drop(x)
-        x = F.leaky_relu(self.conv2(x), 0.2)
-        #x = self.conv2_bn(x)
-        x = self.conv2_drop(x)
-        x = F.leaky_relu(self.conv3(x), 0.2)
-        #x = self.conv3_bn(x)
-        x = self.conv3_drop(x)
+        x = F.leaky_relu(self.conv2_bn(self.conv2(x)), 0.2)
+        x = F.leaky_relu(self.conv3_bn(self.conv3(x)), 0.2)
+        x = F.leaky_relu(self.conv4_bn(self.conv4(x)), 0.2)
         x = x.view(-1, self.num_flat_features(x))
         x = self.fc(x)
+        return x
 
         return x
 
@@ -73,29 +61,24 @@ class Discriminator(nn.Module):
     
 class Generator(nn.Module):
 
-    def __init__(self):
+    def __init__(self, z_dim=100):
         super().__init__()
-        self.fc = nn.Linear(100, 256*7*7)
-        self.trans_conv1 = nn.ConvTranspose2d(256, 128, kernel_size = 3, stride = 2, padding = 1, output_padding = 1)
-        #self.trans_conv1_bn = nn.BatchNorm2d(128)
-        self.trans_conv2 = nn.ConvTranspose2d(128, 64, kernel_size = 3, stride = 1, padding = 1)
-        #self.trans_conv2_bn = nn.BatchNorm2d(64)
-        self.trans_conv3 = nn.ConvTranspose2d(64, 32, kernel_size = 3, stride = 1, padding = 1)
-        #self.trans_conv3_bn = nn.BatchNorm2d(32)
-        self.trans_conv4 = nn.ConvTranspose2d(32, 1, kernel_size = 3, stride = 2, padding = 1, output_padding = 1)
+        self.fc = nn.Linear(z_dim, 512*14*14)
+        self.trans_conv1 = nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2, padding=1)
+        self.trans_conv1_bn = nn.BatchNorm2d(256)
+        self.trans_conv2 = nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1)
+        self.trans_conv2_bn = nn.BatchNorm2d(128)
+        self.trans_conv3 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1)
+        self.trans_conv3_bn = nn.BatchNorm2d(64)
+        self.trans_conv4 = nn.ConvTranspose2d(64, 3, kernel_size=4, stride=2, padding=1)
 
     def forward(self, x):
         x = self.fc(x)
-        x = x.view(-1, 256, 7, 7)
-        x = F.relu(self.trans_conv1(x))
-        #x = self.trans_conv1_bn(x)
-        x = F.relu(self.trans_conv2(x))
-        #x = self.trans_conv2_bn(x)
-        x = F.relu(self.trans_conv3(x))
-        #x = self.trans_conv3_bn(x)
-        x = self.trans_conv4(x)
-        x = torch.tanh(x)
-
+        x = x.view(-1, 512, 14, 14)
+        x = F.relu(self.trans_conv1_bn(self.trans_conv1(x)))
+        x = F.relu(self.trans_conv2_bn(self.trans_conv2(x)))
+        x = F.relu(self.trans_conv3_bn(self.trans_conv3(x)))
+        x = torch.tanh(self.trans_conv4(x))
         return x
     
     #Comment the following 2 lines if you want to run the Basic GAN instead of the DCGAN
@@ -200,12 +183,12 @@ def train(D, G, disc_opt, gen_opt, train_dl, batch_size = 32, epochs = 25, gen_i
             G.eval()                    #Going into eval mode to get sample images
             samples = G(fixed_samples.float())
             G.train()                   #Going back into train mode
-            generated_img = samples.cpu().detach()
 
             save_dir = '/home/jorgecarranzapena01/csci-4353-JorgeCaPe/HW/hw3/img'
 
-            generated_img = make_grid(generated_img)
-            save_image(generated_img, f"{save_dir}/image_epoch{epoch}.png")
+            for i, img in enumerate(samples):
+                img = img.cpu().detach()
+                save_image(img, f"{save_dir}/image_epoch{epoch}_num{i}.png")
 
         #Printing losses every epoch
         print("Epoch ", epoch, ": Discriminator Loss = ", disc_loss_total/len(train_dl), ", Generator Loss = ", gen_loss_total/len(train_dl))
@@ -216,11 +199,3 @@ def train(D, G, disc_opt, gen_opt, train_dl, batch_size = 32, epochs = 25, gen_i
 disc_losses, gen_losses = train(D, G, disc_opt, gen_opt, train_dl, batch_size)
 
 torch.save(G.state_dict(), 'generator_state.pt')
-# fig, ax = plt.subplots()
-# print(disc_losses)
-# #disc_losses = disc_losses.numpy()
-# #gen_losses = np.array(gen_losses)
-# plt.plot(disc_losses, label='Discriminator')
-# plt.plot(gen_losses, label='Generator')
-# plt.title("Training Losses")
-# plt.legend()
