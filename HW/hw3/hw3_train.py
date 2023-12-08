@@ -45,7 +45,7 @@ ngf = 64
 ndf = 64
 
 # Number of training epochs
-num_epochs = 5
+num_epochs = 30
 
 # Learning rate for optimizers
 lr = 0.0002
@@ -149,46 +149,33 @@ class Discriminator(nn.Module):
 
     def forward(self, input):
         return self.main(input)
-
-# Create the Discriminator
+      
 netD = Discriminator(ngpu).to(device)
 
-# Handle multi-GPU if desired
 if (device.type == 'cuda') and (ngpu > 1):
     netD = nn.DataParallel(netD, list(range(ngpu)))
 
-# Apply the ``weights_init`` function to randomly initialize all weights
-# like this: ``to mean=0, stdev=0.2``.
 netD.apply(weights_init)
 
-# Print the model
 print(netD)
 
-# Initialize the ``BCELoss`` function
 criterion = nn.BCELoss()
 
-# Create batch of latent vectors that we will use to visualize
-#  the progression of the generator
 fixed_noise = torch.randn(64, nz, 1, 1, device=device)
 
-# Establish convention for real and fake labels during training
 real_label = 1.
 fake_label = 0.
 
-# Setup Adam optimizers for both G and D
 optimizerD = optim.Adam(netD.parameters(), lr=lr, betas=(beta1, 0.999))
 optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 
-# Lists to keep track of progress
 img_list = []
 G_losses = []
 D_losses = []
 iters = 0
 
 print("Starting Training Loop...")
-# For each epoch
 for epoch in range(num_epochs):
-    # For each batch in the dataloader
     for i, data in enumerate(dataloader, 0):
         netD.zero_grad()
 
@@ -240,10 +227,10 @@ for epoch in range(num_epochs):
         G_losses.append(errG.item())
         D_losses.append(errD.item())
 
-
-        if (iters % 500 == 0) or ((epoch == num_epochs-1) and (i == len(dataloader)-1)):
-            with torch.no_grad():
-                fake = netG(fixed_noise).detach().cpu()
-            vutils.save_image(vutils.make_grid(fake, padding=2, normalize=True), f"/home/jorgecarranzapena01/csci-4353-JorgeCaPe/HW/hw3/img2/outputted_img{epoch}.png")
-
         iters += 1
+      if (epoch % 5 == 0):
+          with torch.no_grad():
+              fake = netG(fixed_noise).detach().cpu()
+          vutils.save_image(vutils.make_grid(fake, padding=2, normalize=True), f"/home/jorgecarranzapena01/csci-4353-JorgeCaPe/HW/hw3/img2/fake_epoch{epoch}.png")
+
+        
