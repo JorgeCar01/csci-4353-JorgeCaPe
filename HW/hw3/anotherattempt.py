@@ -29,7 +29,7 @@ path_to_data = r'/home/jorgecarranzapena01/celebA'
 train_dataset = datasets.ImageFolder(root=path_to_data, transform=transform)
 
 
-train_loader = DataLoader(dataset, batch_size, shuffle = True, num_workers=4)
+train_loader = DataLoader(train_dataset, batch_size, shuffle = True, num_workers=4)
 
 # %%
 class Generator(nn.Module):

@@ -10,9 +10,6 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from IPython.display import HTML
 
 # Set random seed for reproducibility
 manualSeed = 999
@@ -23,10 +20,10 @@ torch.manual_seed(manualSeed)
 torch.use_deterministic_algorithms(True) # Needed for reproducible results
 
 # Root directory for dataset
-dataroot = "data/celeba"
+dataroot = r'/home/jorgecarranzapena01/celebA'
 
 # Number of workers for dataloader
-workers = 2
+workers = 1
 
 # Batch size during training
 batch_size = 128
@@ -72,13 +69,6 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
 
 # Decide which device we want to run on
 device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
-
-# Plot some training images
-real_batch = next(iter(dataloader))
-plt.figure(figsize=(8,8))
-plt.axis("off")
-plt.title("Training Images")
-plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=2, normalize=True).cpu(),(1,2,0)))
 
 def weights_init(m):
     classname = m.__class__.__name__
@@ -254,6 +244,6 @@ for epoch in range(num_epochs):
         if (iters % 500 == 0) or ((epoch == num_epochs-1) and (i == len(dataloader)-1)):
             with torch.no_grad():
                 fake = netG(fixed_noise).detach().cpu()
-            vutils.save_image((vutils.make_grid(fake, padding=2, normalize=True)), f"/home/jorgecarranzapena01/csci-4353-JorgeCaPe/HW/hw3/img2/outputted_img{epoch}.png"))
+            vutils.save_image(vutils.make_grid(fake, padding=2, normalize=True), f"/home/jorgecarranzapena01/csci-4353-JorgeCaPe/HW/hw3/img2/outputted_img{epoch}.png")
 
         iters += 1
